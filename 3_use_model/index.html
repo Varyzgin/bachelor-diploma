@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Map with Folium and JavaScript</title>
+    <meta charset="utf-8">
+    <style>
+        #map {
+            width: 100%;
+            height: 80%;
+        }
+        #input-form {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            padding: 10px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+    <div>
+        <input type="text" id="city" name="city" value="Нижний Новгород" readonly><br>
+        <input type="text" id="address" name="address" placeholder="Адрес"><br>
+        <input type="text" id="area" name="area" placeholder="Общая площадь"><br>
+        <input type="text" id="year" name="year" placeholder="Год постройки"><br>
+        <input type="text" id="floors" name="floors" placeholder="Этажность"><br>
+
+        <button onclick="submitData()">Отправить</button>
+    </div>
+
+    <script>
+        let socket;
+
+        function submitData() {
+            const city = document.getElementById('city').value;
+            const address = document.getElementById('address').value;
+            const area = document.getElementById('area').value;
+            const year = document.getElementById('year').value;
+            const floors = document.getElementById('floors').value;
+
+            const data = {
+                city: city,
+                address: address,
+                area: area,
+                year: year,
+                floors: floors
+            };
+
+            // Устанавливаем соединение с сервером через WebSocket
+        var socket = new WebSocket('ws://89.109.9.132:3125');
+        console.log(data);
+
+        socket.onopen = function(event) {
+            console.log("WebSocket connection established.");
+            // Отправляем данные только после установления соединения
+            socket.send(JSON.stringify(data));
+        };
+
+        socket.onmessage = function(event) {
+            console.log("Received from server: " + event.data);
+            var newWindow = window.open();
+            newWindow.document.write(event.data);
+            newWindow.document.close();
+        };
+
+        socket.onclose = function(event) {
+            console.log("WebSocket connection closed.");
+        };
+
+        socket.onerror = function(event) {
+            console.error("WebSocket error: ", event);
+        };
+    }
+</script>
+</body>
+</html>
